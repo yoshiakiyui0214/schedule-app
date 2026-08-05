@@ -1,4 +1,9 @@
 # 予定管理・通知アプリ
+## スクリーンショット
+
+| トップページ | 予定登録画面 |
+|---|---|
+| ![トップページ](./public/screenshots/top.png) | ![予定登録画面](./public/screenshots/new-event.png) |
 
 個人利用向けの予定登録・一覧確認・事前プッシュ通知アプリ。要件定義は [`docs/requirements.md`](./docs/requirements.md) を参照。
 
