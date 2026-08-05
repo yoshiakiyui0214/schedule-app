@@ -63,9 +63,17 @@ http://localhost:3000 を開く。初回は `/login` から「新規登録」で
 
 1. ログイン後トップページの「プッシュ通知を有効にする」ボタンでブラウザの通知許可 → Service Worker (`public/sw.js`) 経由でプッシュ購読を作成し、`push_subscriptions` テーブルに保存。
 2. `/api/cron/send-reminders` が「まだ通知していない・完了していない・通知予定時刻を過ぎた」予定を探し、該当ユーザーの購読先へ Web Push を送信、送信済みとして `notified_at` を記録する。
-3. 本番では `vercel.json` の Cron Job がこのエンドポイントを5分おきに叩く。
+3. 本番では `vercel.json` の Cron Job がこのエンドポイントを叩く。
 
-**既知の制約**: 要件定義書では「通知は指定時刻±1分以内に配信」を求めているが、Vercel Hobby（無料）プランの Cron Job は頻度に制限がある場合がある。無料枠のまま高頻度に実行したい場合は、[cron-job.org](https://cron-job.org) 等の外部無料Cronサービスから `GET /api/cron/send-reminders` を `Authorization: Bearer <CRON_SECRET>` 付きで毎分叩く方法に切り替えることを推奨。
+**既知の制約**: Vercel Hobby（無料）プランの Cron Job は**1日1回まで**という制限があるため、`vercel.json` の `schedule` は `0 0 * * *`（1日1回）にしてある。しかし要件定義書では「通知は指定時刻±1分以内に配信」を求めており、1日1回の実行ではこれを満たせない。
+
+高頻度（例：毎分）に `/api/cron/send-reminders` を実行したい場合は、[cron-job.org](https://cron-job.org) など外部の無料Cronサービスを使う。
+
+1. cron-job.org にアカウントを作成し、新しいCronジョブを作成する。
+2. URL に `https://<本番ドメイン>/api/cron/send-reminders` を設定する。
+3. リクエストメソッドを `GET` にし、ヘッダーに `Authorization: Bearer <CRON_SECRET>`（`.env` / Vercel の環境変数に設定した値と同じもの）を追加する。
+4. 実行間隔を毎分（または要件の許容誤差に合わせた間隔）に設定して保存する。
+5. Vercel側の `vercel.json` の Cron（1日1回）はそのまま残してよい（外部Cronが止まった場合のフォールバックとして機能する）。
 
 ## デプロイ（Vercel）
 
