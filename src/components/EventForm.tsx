@@ -12,16 +12,32 @@ const NOTIFY_OPTIONS = [
   { value: 1440, label: "1日前" },
 ];
 
+function getJstParts(iso: string) {
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  const parts = Object.fromEntries(
+    formatter.formatToParts(new Date(iso)).map((p) => [p.type, p.value])
+  ) as Record<"year" | "month" | "day" | "hour" | "minute", string>;
+  // Some runtimes render midnight as "24" under hour12: false.
+  if (parts.hour === "24") parts.hour = "00";
+  return parts;
+}
+
 function toDateInputValue(iso: string) {
-  const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const { year, month, day } = getJstParts(iso);
+  return `${year}-${month}-${day}`;
 }
 
 function toTimeInputValue(iso: string) {
-  const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const { hour, minute } = getJstParts(iso);
+  return `${hour}:${minute}`;
 }
 
 export function EventForm({

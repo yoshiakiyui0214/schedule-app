@@ -25,7 +25,9 @@ function parseEventForm(formData: FormData): ParseResult {
   if (!title) return { ok: false, error: "タイトルを入力してください。" };
   if (!date || !time) return { ok: false, error: "日時を入力してください。" };
 
-  const startAt = new Date(`${date}T${time}`);
+  // The date/time inputs represent JST (Asia/Tokyo) wall-clock values regardless of
+  // the server runtime's local timezone, so parse them with an explicit +09:00 offset.
+  const startAt = new Date(`${date}T${time}:00+09:00`);
   if (Number.isNaN(startAt.getTime())) {
     return { ok: false, error: "日時の形式が正しくありません。" };
   }
